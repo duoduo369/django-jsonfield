@@ -75,6 +75,13 @@ class JSONFieldBase(six.with_metaclass(SubfieldBase, models.Field)):
                 # see: https://github.com/bradjasper/django-jsonfield/issues/52
                 if getattr(obj, "pk", None) is not None:
                     if isinstance(value, six.string_types):
+                        # cause mysql longtext area cant have default value
+                        # if that jsonfile wanted default some value, then
+                        # may get some error, cause db set that filed as ''
+                        # thus json.loads will failed.
+                        # When this append, set jsonfiled as it's default value
+                        if not value:
+                            return self.default
                         try:
                             return json.loads(value, **self.load_kwargs)
                         except ValueError:
